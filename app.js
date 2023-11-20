@@ -5,6 +5,7 @@ const db = sqlite3('./users.db', {verbose: console.log})
 const session = require('express-session')
 const dotenv = require('dotenv');
 dotenv.config()
+const bcrypt = require('bcrypt')
 
 
 
@@ -56,7 +57,7 @@ async function getUsers(request, response) {
     if (checkLoggedIn(request, response)) {
 
     let users = null
-    const sql=db.prepare('SELECT username, firstname, lastname, mobile, picture FROM user')
+    const sql=db.prepare('SELECT username, firstname, lastname, mobile FROM user')
     let rows = sql.all()   //await db.query(sql)
     console.log("rows.length",rows.length)
     if (rows.length === 0) {
@@ -65,7 +66,7 @@ async function getUsers(request, response) {
         users = await getAPIUsers()
         users.forEach(user => {
             console.log(user.name.first, user.name.last)
-            addUser(user.login.username, user.name.first, user.name.last, user.cell, user.picture.large )
+            addUser(user.login.username, user.name.first, user.name.last, user.cell)
         })
 
     }
@@ -89,10 +90,24 @@ async function getUsers(request, response) {
 }
 }
 
-function addUser(username, firstName, lastName, mobile, picture) {
-    const sql = db.prepare("INSERT INTO user (username, firstName, lastName, mobile, picture) values (?, ?, ?, ?, ?)")
-    const info = sql.run(username, firstName, lastName, mobile, picture)
+function addUser(username, password, firstName, lastName, mobile, role) {
+    const sql = db.prepare("INSERT INTO user (username, password, firstName, lastName, mobile, role) values (?, ?, ?, ?, ?, ?)")
+    const info = sql.run(username, password, firstName, lastName, mobile, role)
 }
+
+//passord hash test
+const saltRounds = 10
+const password1 = "pass123"
+
+const hash = bcrypt.hashSync(password1, saltRounds);
+console.log("Hash: " + hash)
+
+const password2 = "pass123"
+const result = bcrypt.compareSync(password2, hash);
+console.log("Result of comparing passwords: " + result)
+
+addUser("user123", "pass123", "fname", "lname", "mobile", hash)
+
 
 function updateUserDB(username, firstName, lastName, mobile) {
     const sql = db.prepare("update user set firstName=(?), lastName =(?), mobile=(?)  where username=(?)")
