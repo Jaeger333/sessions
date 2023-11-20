@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users</title>
+</head>
+<body>
+    <table id="userTable">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Cell</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div id="userDetails" style="display:none;">
+        <form id="userForm" action='/user' method="POST">
+            <img id="userImage" src="" alt="User's Picture" />
+            <div>
+                <label for="username">Username:</label>
+                <input type="text" name="username" id="username" readonly />
+            </div>
+            <div>
+                <label for="firstname">First Name:</label>
+                <input type="text" name="firstname" id="firstname" />
+            </div>
+            <div>
+                <label for="lastname">Last Name:</label>
+                <input type="text" name="lastname" id="lastname" />
+            </div>
+            <div>
+                <label for="cell">Cell:</label>
+                <input type="text" name = "cell" id="cell" />
+            </div>
+            <button type="submit">Update User</button>
+        </form>
+    </div>
+
+    <script>
+        async function getUsers() {
+            let response = await fetch('/users');
+            let users = await response.json();
+            //let users = data.results; // Assuming that the JSON has a 'results' field containing the users.
+
+            let userTable = document.querySelector('#userTable tbody');
+
+            users.forEach(user => {
+                let row = userTable.insertRow();
+                row.insertCell().textContent = user.login.username;
+                row.insertCell().textContent = user.name.first;
+                row.insertCell().textContent = user.name.last;
+                row.insertCell().textContent = user.cell;
+                row.addEventListener('click', () => {
+                    showUserDetails(user);
+                });
+            });
+        }
+
+        function showUserDetails(user) {
+            document.getElementById('userDetails').style.display = 'block';
+            document.getElementById('userImage').src = user.picture.large;
+            document.getElementById('username').value = user.login.username;
+            document.getElementById('firstname').value = user.name.first;
+            document.getElementById('lastname').value = user.name.last;
+            document.getElementById('cell').value = user.cell;
+        }
+  
+
+        getUsers();
+    </script>
+</body>
+</html>
